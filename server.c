@@ -6,19 +6,29 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:51 by sithomas          #+#    #+#             */
-/*   Updated: 2024/12/13 18:21:16 by sithomas         ###   ########.fr       */
+/*   Updated: 2024/12/17 16:10:17 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
 static int	getPID(char *str);
-static void	handler(int signal);
+static void	send_char(unsigned char c, int PID);
+static void handler(int signal);
+static volatile int check;
+
+/*
+Program behaviour:
+	1. Converts argv[1] into int
+	2. For each char of argv[2], converts each bit of char into SIGSUR1 (if 1) 
+	or SIGSUR2 (if 0)
+*/
 
 int	main(int argc, char **argv)
 {
-	struct sigaction	act;
-	int					PID;
+	int		PID;
+	size_t	i;
+	struct sigaction	*act;
 	
 	if (argc != 3)
 	{
@@ -28,28 +38,27 @@ int	main(int argc, char **argv)
 	PID = getPID(argv[1]);
 	if (PID < 0)
 		return (-1);
-	/*
-	I want to modify the effect of SIGUR1 signal with sigaction to make it transmit argv[2];
-	*/
-	act.sa_handler = handler;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
-	sigaction(SIGUSR1, &act, NULL);
-	/*
-	I want to send SIGUR1 Signal to the PID in argv[1];
-	*/
-	kill(PID, SIGUSR1);
+	i = 0;
+	check = 0;
+	signal(SIGUSR1, handler);
+	while (argv[2][i])
+	{	
+		send_char(argv[2][i], PID);
+		i++;
+	}
+	send_char('\0', PID);
 	write(1, "sent\n", 5);
+	exit(0);
+	return (0);
 }
+/*
+Converts a char * into an int. Returns an error if char != digit
+*/
 
-static void	handler(int signal)
+static void handler(int signal)
 {
 	if (signal == SIGUSR1)
-	{
-		write(1, "Coucou c'est moi le serveur\n", 28);
-		exit(0);
-	}
-	exit(1);
+		check = 1;
 }
 
 static int	getPID(char *str)
@@ -71,4 +80,28 @@ static int	getPID(char *str)
 		i++;
 	}
 	return (result);
+}
+/*
+Cuts char into bits and sends signal depending on binary (SIGSUR1 if 1 and SIGSUR2 if 0)
+*/
+
+static void	send_char(unsigned char c, int PID)
+{
+	size_t	i;
+	size_t	sizeByte;
+
+	i = 0;
+	sizeByte = 8;
+	while (i < 8)
+	{
+		check = 0;
+		if (((c >> i) & 1) == 1)
+			kill(PID, SIGUSR1);
+		else
+			kill(PID, SIGUSR2);
+		usleep(100);
+		while (check == 0)
+			pause();
+		i++;
+	}
 }
