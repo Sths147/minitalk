@@ -5,103 +5,64 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/13 13:31:51 by sithomas          #+#    #+#             */
-/*   Updated: 2024/12/17 16:10:17 by sithomas         ###   ########.fr       */
+/*   Created: 2024/12/13 13:31:55 by sithomas          #+#    #+#             */
+/*   Updated: 2024/12/17 17:40:21 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
-static int	getPID(char *str);
-static void	send_char(unsigned char c, int PID);
-static void handler(int signal);
-static volatile int check;
-
 /*
-Program behaviour:
-	1. Converts argv[1] into int
-	2. For each char of argv[2], converts each bit of char into SIGSUR1 (if 1) 
-	or SIGSUR2 (if 0)
+Client behaviour:
+	1. Prints PID
+	2. Listens to signals, if receives a signal, then reconstitutes chars and prints;
 */
 
-int	main(int argc, char **argv)
+static void	handler(int signal, siginfo_t *info, void *context);
+
+int	main(void)
 {
-	int		PID;
-	size_t	i;
-	struct sigaction	*act;
+	struct sigaction 	act;
 	
-	if (argc != 3)
+	printf("%d\n", getpid());
+	act.sa_sigaction = handler;
+	act.sa_flags = SA_SIGINFO;
+	sigemptyset(&act.sa_mask);
+	sigaction(SIGUSR1, &act, NULL);
+	sigaction(SIGUSR2, &act, NULL);
+	while (1)
 	{
-		write(1, "Wrong number of arguments :(\n", 30);
-		return (-1);
+		pause();
 	}
-	PID = getPID(argv[1]);
-	if (PID < 0)
-		return (-1);
-	i = 0;
-	check = 0;
-	signal(SIGUSR1, handler);
-	while (argv[2][i])
-	{	
-		send_char(argv[2][i], PID);
-		i++;
-	}
-	send_char('\0', PID);
-	write(1, "sent\n", 5);
-	exit(0);
 	return (0);
 }
-/*
-Converts a char * into an int. Returns an error if char != digit
-*/
-
-static void handler(int signal)
+static void	handler(int signal, siginfo_t *info, void *context)
 {
+	static unsigned char		c;
+	static size_t				bytes;
+
+	(void)context;
+	if (!c)
+		c = 0;
+	if (!bytes)
+		bytes = 0;
+	c = c >> 1;
 	if (signal == SIGUSR1)
-		check = 1;
-}
-
-static int	getPID(char *str)
-{
-	size_t	i;
-	int		result;
-
-	result = 0;
-	i = 0;
-	while (str[i])
-	{
-		if (str[i] < 48 || str[i] > 58)
-		{
-			printf("First arg is not PID, pleade put PID as first argument and message as second\n");
-			return (-1);
-		}
-		result *= 10;
-		result += str[i] - 48;
-		i++;
+		c |= 128;
+	bytes++;
+	if (bytes == 8)
+	{	
+		
+		if (c == '\0')
+			write(1, "\n", 1);
+		else 
+			write(1, &c, 1);
+		bytes = 0;
+		c = '\0';
 	}
-	return (result);
+	kill(info->si_pid, SIGUSR1);
 }
 /*
-Cuts char into bits and sends signal depending on binary (SIGSUR1 if 1 and SIGSUR2 if 0)
+0000 0000
+
 */
-
-static void	send_char(unsigned char c, int PID)
-{
-	size_t	i;
-	size_t	sizeByte;
-
-	i = 0;
-	sizeByte = 8;
-	while (i < 8)
-	{
-		check = 0;
-		if (((c >> i) & 1) == 1)
-			kill(PID, SIGUSR1);
-		else
-			kill(PID, SIGUSR2);
-		usleep(100);
-		while (check == 0)
-			pause();
-		i++;
-	}
-}
