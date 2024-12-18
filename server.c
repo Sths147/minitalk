@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:55 by sithomas          #+#    #+#             */
-/*   Updated: 2024/12/17 17:40:21 by sithomas         ###   ########.fr       */
+/*   Updated: 2024/12/18 16:05:04 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,26 +19,39 @@ Client behaviour:
 */
 
 static void	handler(int signal, siginfo_t *info, void *context);
+static char	**result;
 
 int	main(void)
 {
 	struct sigaction 	act;
+	size_t				len;
 	
-	printf("%d\n", getpid());
+	printf("%d\n---------------PRINT AREA----------------\n\n", getpid());
 	act.sa_sigaction = handler;
 	act.sa_flags = SA_SIGINFO;
 	sigemptyset(&act.sa_mask);
 	sigaction(SIGUSR1, &act, NULL);
 	sigaction(SIGUSR2, &act, NULL);
-	while (1)
-	{
+	result = malloc((sizeof(size_t) + 1) * sizeof(char));
+	if (result)
+		exit(1);
+	while (*result != '\0')
 		pause();
+	len = ft_atoi(result);
+	while (1)
+	{	
+		free(result);
+		result = malloc((len + 1) * sizeof(char));
+		if (!result)
+			exit(1);
+		while(*result != '\0')
+			pause();
 	}
 	return (0);
 }
 static void	handler(int signal, siginfo_t *info, void *context)
 {
-	static unsigned char		c;
+	static size_t				c;
 	static size_t				bytes;
 
 	(void)context;
@@ -46,13 +59,12 @@ static void	handler(int signal, siginfo_t *info, void *context)
 		c = 0;
 	if (!bytes)
 		bytes = 0;
-	c = c >> 1;
+	c = c << 1;
 	if (signal == SIGUSR1)
-		c |= 128;
+		c |= 1;
 	bytes++;
 	if (bytes == 8)
 	{	
-		
 		if (c == '\0')
 			write(1, "\n", 1);
 		else 
@@ -62,7 +74,3 @@ static void	handler(int signal, siginfo_t *info, void *context)
 	}
 	kill(info->si_pid, SIGUSR1);
 }
-/*
-0000 0000
-
-*/

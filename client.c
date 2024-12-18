@@ -6,57 +6,55 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:51 by sithomas          #+#    #+#             */
-/*   Updated: 2024/12/17 19:29:57 by sithomas         ###   ########.fr       */
+/*   Updated: 2024/12/18 14:05:59 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
-static int	getPID(char *str);
-static void	send_char(unsigned char c, int PID);
-static void handler(int signal);
-static volatile int check;
+static int						getPID(char *str);
+static int						sendByte(size_t c, int PID);
+static void						handler(int signal);
+static size_t					ft_strlen(char *s);
+static volatile sig_atomic_t	check;
 
 /*
 Program behaviour:
-	1. Converts argv[1] into int
-	2. For each char of argv[2], converts each bit of char into SIGSUR1 (if 1) 
-	or SIGSUR2 (if 0)
+	1. Converts PID (argv[1]) into int and checks if error
+	2. For each char of the massage (argv[2]), converts each bit of each
+	char into SIGSUR1 (if 1) or SIGSUR2 (if 0)
 */
 
 int	main(int argc, char **argv)
 {
 	int		PID;
 	size_t	i;
-	
+
 	if (argc != 3)
 	{
 		write(1, "Wrong number of arguments :(\n", 30);
 		return (-1);
 	}
 	PID = getPID(argv[1]);
-	printf("%d\n", PID);
 	if (PID < 0)
 		return (-1);
-	i = 0;
 	check = 0;
 	signal(SIGUSR1, handler);
+	if (sendByte(ft_strlen(argv[2]), PID) == -1)
+		return (-1);
+	sendByte('\0', PID);
+	i = 0;
 	while (argv[2][i])
-		send_char(argv[2][i++], PID);
-	send_char('\0', PID);
+		sendByte(argv[2][i++], PID);
+	sendByte('\0', PID);
 	write(1, "sent\n", 5);
 	exit(0);
 	return (0);
 }
 /*
-Converts a char * into an int. Returns an error if char != digit
+Converts the argv[1] (PID) into an int. Returns an error if invalid format
+or if PID is wrong
 */
-
-static void handler(int signal)
-{
-	if (signal == SIGUSR1)
-		check = 1;
-}
 
 static int	getPID(char *str)
 {
@@ -69,36 +67,72 @@ static int	getPID(char *str)
 	{
 		if (str[i] < 48 || str[i] > 58)
 		{
-			printf("First arg is not PID, pleade put PID as first argument and message as second\n");
+			write(1, "Invalid PID :(\n", 14);
 			return (-1);
 		}
 		result *= 10;
 		result += str[i] - 48;
 		i++;
 	}
+	if (kill(result, 0) == -1)
+	{
+		write(1, "Invalid PID :(\n", 14);
+		return (-1);
+	}
 	return (result);
 }
 /*
-Cuts char into bits and sends signal depending on binary (SIGSUR1 if 1 and SIGSUR2 if 0)
+Sends the len of argv[2] to the server
+Checks if server sends back a signal 
 */
 
-static void	send_char(unsigned char c, int PID)
+static int	sendByte(size_t len, int PID)
 {
-	size_t	i;
-	size_t	sizeByte;
-
-	i = 0;
-	sizeByte = 8;
-	while (i < 8)
+	size_t			tmp;
+	size_t			size;
+	size_t			timeOutChecker;
+	
+	size = sizeof(len);
+	while (size > 0)
 	{
+		tmp = len;
 		check = 0;
-		if (((c >> i) & 1) == 1)
+		if (((tmp >> (size - 1)) & 1) == 1)
 			kill(PID, SIGUSR1);
 		else
 			kill(PID, SIGUSR2);
-		usleep(100);
+		timeOutChecker = 0;
 		while (check == 0)
-			pause();
-		i++;
+		{
+			usleep(10000);
+			timeOutChecker++;
+			if (timeOutChecker > 30)
+				return (-1);
+		}
+		size--;
 	}
+	return (0);
+}
+
+/*
+Handler to send a signal to client to let him know the bit is received
+*/
+
+static void	handler(int signal)
+{
+	if (signal == SIGUSR1)
+		check = 1;
+}
+
+/*
+Calculates length of str
+*/
+static size_t	ft_strlen(char *s)
+{
+	size_t	i;
+
+	i = 0;
+	while(s[i])
+		i++;
+	return (i);
 }

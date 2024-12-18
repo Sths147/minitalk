@@ -6,7 +6,7 @@
 #    By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/17 16:23:34 by sithomas          #+#    #+#              #
-#    Updated: 2024/12/17 19:14:49 by sithomas         ###   ########.fr        #
+#    Updated: 2024/12/18 13:45:54 by sithomas         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ CFLAGS = -Wall -Wextra -Werror -g3
 
 SRC_SERVER = server.c
 
-SRC_CLIENT = client.c
+SRC_CLIENT = client.c \
 
 INC = minitalk.h \
 
