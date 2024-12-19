@@ -6,16 +6,16 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:51 by sithomas          #+#    #+#             */
-/*   Updated: 2024/12/18 14:05:59 by sithomas         ###   ########.fr       */
+/*   Updated: 2024/12/19 18:01:39 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
 static int						getPID(char *str);
-static int						sendByte(size_t c, int PID);
+static int						sendByte(size_t c, int PID, size_t size);
 static void						handler(int signal);
-static size_t					ft_strlen(char *s);
+static size_t					ft_strlen_minitalk(char *s);
 static volatile sig_atomic_t	check;
 
 /*
@@ -40,13 +40,15 @@ int	main(int argc, char **argv)
 		return (-1);
 	check = 0;
 	signal(SIGUSR1, handler);
-	if (sendByte(ft_strlen(argv[2]), PID) == -1)
-		return (-1);
-	sendByte('\0', PID);
+	i = 0;
+	printf("%zu\n", ft_strlen_minitalk(argv[2]));
+	sendByte(ft_strlen_minitalk(argv[2]), PID, 64);
+	printf("done\n");	
+	usleep(100);
 	i = 0;
 	while (argv[2][i])
-		sendByte(argv[2][i++], PID);
-	sendByte('\0', PID);
+		sendByte(argv[2][i++], PID, 8);
+	sendByte('\0', PID, 8);
 	write(1, "sent\n", 5);
 	exit(0);
 	return (0);
@@ -86,13 +88,12 @@ Sends the len of argv[2] to the server
 Checks if server sends back a signal 
 */
 
-static int	sendByte(size_t len, int PID)
+static int	sendByte(size_t len, int PID, size_t size)
 {
 	size_t			tmp;
-	size_t			size;
+	// size_t			size;
 	size_t			timeOutChecker;
 	
-	size = sizeof(len);
 	while (size > 0)
 	{
 		tmp = len;
@@ -127,7 +128,7 @@ static void	handler(int signal)
 /*
 Calculates length of str
 */
-static size_t	ft_strlen(char *s)
+static size_t	ft_strlen_minitalk(char *s)
 {
 	size_t	i;
 
