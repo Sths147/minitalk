@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:55 by sithomas          #+#    #+#             */
-/*   Updated: 2024/12/19 19:36:57 by sithomas         ###   ########.fr       */
+/*   Updated: 2024/12/20 13:53:30 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,13 +19,18 @@ Client behaviour:
 */
 
 static void		handler(int signal, siginfo_t *info, void *context);
-static char		*result;
-static size_t	len;
+static char		*jointhisfuckinglist(t_list **lst, size_t size);
+static size_t	ft_lstsize(t_list **lst);
+static void	ft_lstadd_back(t_list **lst, char c);
+
+t_list				**lst;
 
 int	main(void)
 {
 	struct sigaction 	act;
-	
+	char				*result;
+	size_t				size;
+
 	printf("%d\n---------------PRINT AREA----------------\n\n", getpid());
 	act.sa_sigaction = handler;
 	act.sa_flags = SA_SIGINFO;
@@ -34,18 +39,18 @@ int	main(void)
 	sigaction(SIGUSR2, &act, NULL);
 	while (1)
 	{	
-		if (len != 0)
+		if (lst)
+			while ((*lst)->s[0] != '\0')
+				pause();
+		size = 0;
+		size = ft_lstsize(lst);
+		if (size != 0)
 		{	
-			result = malloc((len + 1) * sizeof(char));
+			printf("%zu\n", size);
+			result = jointhisfuckinglist(lst, size);
 			if (!result)
 				exit(1);
-			result[len] = 'Z';
-			while(result[len] == 'Z')
-				pause();
-			printf("Result: %s\n", result);
-			free(result);
-			len = 0;
-			continue;
+			printf("%s\n", result);
 		}
 	}
 	return (0);
@@ -54,32 +59,66 @@ static void	handler(int signal, siginfo_t *info, void *context)
 {
 	static size_t				c;
 	static size_t				bits;
-	static size_t				index;
-	static size_t				islen;
 
 	(void)context;
 	c = c << 1;
 	if (signal == SIGUSR1)
 		c |= 1;
 	bits++;
-	if (islen == 0 && bits == 64)
+	if (bits == 8)
 	{	
-		len = c;
-		c = 0;
-		bits = 0;
-		islen = 1;
-	}
-	if (islen == 1 && bits == 8)
-	{	
-		result[index] = c;
-		index++;
-		if (result[index - 1] == '\0')
-		{	
-			index = 0;
-			islen = 0;
-		}
-		bits = 0;
-		c = '\0';
+		ft_lstadd_back(lst, c);
 	}
 	kill(info->si_pid, SIGUSR1);
+}
+static void	ft_lstadd_back(t_list **lst, char c)
+{
+	t_list	*last;
+	t_list	*new;
+	
+	new = malloc(sizeof(t_list));
+	if (!new)
+		return ;
+	new->s[0] = c;
+	new->s[1] = '\0';
+	new->next = NULL;
+	if (!lst)
+		*lst = new;
+	last = *lst;
+	while (last->next)
+		last = last->next;
+	last->next = new;
+}
+static size_t	ft_lstsize(t_list **lst)
+{
+	size_t	i;
+	
+	i = 1;
+	if (!lst)
+		return (0);
+	while ((*lst)->next)
+		i++;
+	return (i);
+}
+
+static char	*jointhisfuckinglist(t_list **lst, size_t size)
+{
+	char	*result;
+	t_list	*tmp;
+	size_t	i;
+
+	result = malloc(size + 1);
+	if (!result)
+		return (NULL);
+	i = 0;
+	while ((*lst)->next)
+	{
+		result[i] = (*lst)->s[0];
+		tmp = (*lst)->next;
+		free(*lst);
+		*lst = tmp;
+		i++;
+	}
+	free(lst);
+	return (result);
 }

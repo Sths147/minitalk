@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:51 by sithomas          #+#    #+#             */
-/*   Updated: 2024/12/19 18:01:39 by sithomas         ###   ########.fr       */
+/*   Updated: 2024/12/20 13:49:06 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,7 @@
 static int						getPID(char *str);
 static int						sendByte(size_t c, int PID, size_t size);
 static void						handler(int signal);
-static size_t					ft_strlen_minitalk(char *s);
-static volatile sig_atomic_t	check;
+volatile sig_atomic_t	check;
 
 /*
 Program behaviour:
@@ -40,11 +39,9 @@ int	main(int argc, char **argv)
 		return (-1);
 	check = 0;
 	signal(SIGUSR1, handler);
-	i = 0;
-	printf("%zu\n", ft_strlen_minitalk(argv[2]));
-	sendByte(ft_strlen_minitalk(argv[2]), PID, 64);
-	printf("done\n");	
-	usleep(100);
+	// sendByte(ft_strlen_minitalk(argv[2]), PID, 64);
+	// printf("done\n");	
+	// sendByte('\0', PID, 8);
 	i = 0;
 	while (argv[2][i])
 		sendByte(argv[2][i++], PID, 8);
@@ -103,7 +100,7 @@ static int	sendByte(size_t len, int PID, size_t size)
 		else
 			kill(PID, SIGUSR2);
 		timeOutChecker = 0;
-		while (check == 0)
+		while (check)
 		{
 			usleep(10000);
 			timeOutChecker++;
@@ -123,17 +120,4 @@ static void	handler(int signal)
 {
 	if (signal == SIGUSR1)
 		check = 1;
-}
-
-/*
-Calculates length of str
-*/
-static size_t	ft_strlen_minitalk(char *s)
-{
-	size_t	i;
-
-	i = 0;
-	while(s[i])
-		i++;
-	return (i);
 }
