@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/03 10:38:28 by sithomas          #+#    #+#             */
-/*   Updated: 2025/01/03 13:05:24 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/01/03 13:56:24 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,9 @@ t_list	*ft_lstlast(t_list **lst)
 		current = current->next;
 	return (current);
 }
+/*
+returns size of list
+*/
 
 size_t	ft_lstsize(t_list **lst)
 {
