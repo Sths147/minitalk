@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:51 by sithomas          #+#    #+#             */
-/*   Updated: 2025/01/03 13:31:13 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/01/03 14:51:17 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ int	main(int argc, char **argv)
 	while (argv[2][i])
 		sendbyte(argv[2][i++], pid, 8);
 	sendbyte('\0', pid, 8);
-	exit(0);
 	return (0);
 }
 /*
