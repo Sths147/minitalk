@@ -6,17 +6,19 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:55 by sithomas          #+#    #+#             */
-/*   Updated: 2025/01/03 12:27:02 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/01/03 13:54:31 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
 /*
-Client behaviour:
+Server behaviour:
 	1. Prints PID
-	2. Listens to signals, if receives a signal, then
-	reconstitutes chars and prints;
+	2. Listens to signals and depending on SIGUSR1 or SIGUSR2 received,
+	reconstitutes a char
+	3. Adds the char to a chained list
+	4. When the character is '\0', prints the result and frees all.
 */
 
 static void	handler(int signal, siginfo_t *info, void *context);
@@ -52,6 +54,9 @@ int	main(void)
 	}
 	return (0);
 }
+/*
+Initiates the handler and assigns the signals to it
+*/
 
 static void	setup_handler(void)
 {
@@ -60,10 +65,18 @@ static void	setup_handler(void)
 	printf("%d\n---------------PRINT AREA----------------\n\n", getpid());
 	act.sa_sigaction = handler;
 	act.sa_flags = SA_SIGINFO;
-	sigemptyset(&act.sa_mask);
-	sigaction(SIGUSR1, &act, NULL);
-	sigaction(SIGUSR2, &act, NULL);
+	if (sigemptyset(&act.sa_mask) < 0)
+		exit(1);
+	if (sigaction(SIGUSR1, &act, NULL) < 0)
+		exit(1);
+	if (sigaction(SIGUSR2, &act, NULL) < 0)
+		exit(1);
 }
+/*
+for each signal received, changes the corresponding bit
+if 8 bits are modified, adds the character to the chained list
+and start again
+*/
 
 static void	handler(int signal, siginfo_t *info, void *context)
 {
@@ -83,6 +96,9 @@ static void	handler(int signal, siginfo_t *info, void *context)
 	}
 	kill(info->si_pid, SIGUSR1);
 }
+/*
+Adds a character at the end of the list
+*/
 
 static void	ft_lstadd_back(t_list **lst, char c)
 {
@@ -91,9 +107,9 @@ static void	ft_lstadd_back(t_list **lst, char c)
 
 	new = malloc(sizeof(t_list));
 	if (!new)
-	{	
+	{
 		free_all(lst);
-		return (exit(1));
+		exit(1);
 	}
 	new->s[0] = c;
 	new->s[1] = '\0';
@@ -108,6 +124,10 @@ static void	ft_lstadd_back(t_list **lst, char c)
 		last = last->next;
 	last->next = new;
 }
+/*
+Gather all the characters into a char *, prints it and frees
+whole list
+*/
 
 static char	*get_result(t_list **lst, size_t size)
 {
@@ -119,7 +139,7 @@ static char	*get_result(t_list **lst, size_t size)
 		return (NULL);
 	result = malloc(size + 1);
 	if (!result)
-	{	
+	{
 		free_all(lst);
 		return (NULL);
 	}
@@ -137,4 +157,3 @@ static char	*get_result(t_list **lst, size_t size)
 	free(lst);
 	return (result);
 }
-
