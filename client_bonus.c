@@ -6,19 +6,19 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:51 by sithomas          #+#    #+#             */
-/*   Updated: 2025/01/03 11:54:58 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/01/03 13:31:13 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
 static int				mypid(char *str);
-static int				sendbyte(unsigned char c, int PID, size_t size);
+static void				sendbyte(unsigned char c, int PID, size_t size);
 static void				handler(int signal);
 volatile sig_atomic_t	g_check;
 
 /*
-Program behaviour:
+Client behaviour:
 	1. Converts PID (argv[1]) into int and checks if error
 	2. For each char of the message (argv[2]), converts each bit of each
 	char into SIGSUR1 (if 1) or SIGSUR2 (if 0)
@@ -32,11 +32,11 @@ int	main(int argc, char **argv)
 	if (argc != 3)
 	{
 		write(1, "Wrong number of arguments :(\n", 30);
-		return (-1);
+		exit(1);
 	}
 	pid = mypid(argv[1]);
 	if (pid < 0)
-		return (-1);
+		exit(1);
 	g_check = 0;
 	signal(SIGUSR1, handler);
 	signal(SIGUSR2, handler);
@@ -78,11 +78,13 @@ static int	mypid(char *str)
 	return (result);
 }
 /*
-Sends the len of argv[2] to the server
+for every bit of the character, sends a :
+	* SIGUSR1 if bit == 1
+	* SIGUSR2 else (bit == 0)
 Checks if server sends back a signal
 */
 
-static int	sendbyte(unsigned char c, int pid, size_t size)
+static void	sendbyte(unsigned char c, int pid, size_t size)
 {
 	unsigned char	tmp;
 	size_t			timeoutchecker;
@@ -101,15 +103,15 @@ static int	sendbyte(unsigned char c, int pid, size_t size)
 			usleep(100);
 			timeoutchecker++;
 			if (timeoutchecker > 30)
-				return (-1);
+				exit(1);
 		}
 		size--;
 	}
-	return (0);
 }
 
 /*
 Handler to send a signal to client to let him know the bit is received
+if SIGUSR2 received, indicates server received well the whole message
 */
 
 static void	handler(int signal)

@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/03 10:38:28 by sithomas          #+#    #+#             */
-/*   Updated: 2025/01/03 12:27:32 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/01/03 13:05:24 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,9 @@ size_t	ft_lstsize(t_list **lst)
 	}
 	return (i);
 }
+/*
+Frees whole list
+*/
 
 void	free_all(t_list **lst)
 {

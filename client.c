@@ -6,19 +6,19 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:51 by sithomas          #+#    #+#             */
-/*   Updated: 2025/01/03 11:25:55 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/01/03 13:25:57 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
 static int				mypid(char *str);
-static int				sendbyte(unsigned char c, int PID, size_t size);
+static void				sendbyte(unsigned char c, int PID, size_t size);
 static void				handler(int signal);
 volatile sig_atomic_t	g_check;
 
 /*
-Program behaviour:
+Client behaviour:
 	1. Converts PID (argv[1]) into int and checks if error
 	2. For each char of the message (argv[2]), converts each bit of each
 	char into SIGSUR1 (if 1) or SIGSUR2 (if 0)
@@ -32,11 +32,11 @@ int	main(int argc, char **argv)
 	if (argc != 3)
 	{
 		write(1, "Wrong number of arguments :(\n", 30);
-		return (-1);
+		exit(1);
 	}
 	pid = mypid(argv[1]);
 	if (pid < 0)
-		return (-1);
+		exit(1);
 	g_check = 0;
 	signal(SIGUSR1, handler);
 	i = 0;
@@ -44,7 +44,6 @@ int	main(int argc, char **argv)
 		sendbyte(argv[2][i++], pid, 8);
 	sendbyte('\0', pid, 8);
 	write(1, "sent\n", 5);
-	exit(0);
 	return (0);
 }
 /*
@@ -63,7 +62,7 @@ static int	mypid(char *str)
 	{
 		if (str[i] < 48 || str[i] > 58)
 		{
-			write(1, "Invalid PID :(\n", 14);
+			write(1, "Invalid PID :(\n", 15);
 			return (-1);
 		}
 		result *= 10;
@@ -72,17 +71,19 @@ static int	mypid(char *str)
 	}
 	if (kill(result, 0) == -1)
 	{
-		write(1, "Invalid PID :(\n", 14);
+		write(1, "Invalid PID :(\n", 15);
 		return (-1);
 	}
 	return (result);
 }
 /*
-Sends the len of argv[2] to the server
+for every bit of the character, sends a :
+	* SIGUSR1 if bit == 1
+	* SIGUSR2 else (bit == 0)
 Checks if server sends back a signal
 */
 
-static int	sendbyte(unsigned char c, int pid, size_t size)
+static void	sendbyte(unsigned char c, int pid, size_t size)
 {
 	unsigned char	tmp;
 	size_t			timeoutchecker;
@@ -98,14 +99,13 @@ static int	sendbyte(unsigned char c, int pid, size_t size)
 		timeoutchecker = 0;
 		while (!g_check)
 		{
-			usleep(100);
+			usleep(10000);
 			timeoutchecker++;
 			if (timeoutchecker > 30)
-				return (-1);
+				exit(1);
 		}
 		size--;
 	}
-	return (0);
 }
 
 /*
