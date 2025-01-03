@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 14:33:04 by sithomas          #+#    #+#             */
-/*   Updated: 2024/12/20 13:17:51 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/01/03 12:27:36 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,14 @@
 # include <stdlib.h>
 # include <unistd.h>
 
-char	*ft_itoa(int n);
-size_t	ft_atoi_minitalk(const char *nptr);
-
 typedef struct s_list
 {
-	char s[2];
+	char			s[2];
 	struct s_list	*next;
 }				t_list;
+
+t_list	*ft_lstlast(t_list **lst);
+size_t	ft_lstsize(t_list **lst);
+void	free_all(t_list **lst);
 
 #endif

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.c                                           :+:      :+:    :+:   */
+/*   client_bonus.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:51 by sithomas          #+#    #+#             */
-/*   Updated: 2025/01/03 11:25:55 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/01/03 11:54:58 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,11 +39,11 @@ int	main(int argc, char **argv)
 		return (-1);
 	g_check = 0;
 	signal(SIGUSR1, handler);
+	signal(SIGUSR2, handler);
 	i = 0;
 	while (argv[2][i])
 		sendbyte(argv[2][i++], pid, 8);
 	sendbyte('\0', pid, 8);
-	write(1, "sent\n", 5);
 	exit(0);
 	return (0);
 }
@@ -116,4 +116,6 @@ static void	handler(int signal)
 {
 	if (signal == SIGUSR1)
 		g_check = 1;
+	if (signal == SIGUSR2)
+		write(1, "Successful reception by server\n", 31);
 }

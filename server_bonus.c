@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   server.c                                           :+:      :+:    :+:   */
+/*   server_bonus.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:55 by sithomas          #+#    #+#             */
-/*   Updated: 2025/01/03 12:27:02 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/01/03 12:27:15 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,8 @@ static void	handler(int signal, siginfo_t *info, void *context)
 	if (bits == 8)
 	{
 		ft_lstadd_back(g_lst, c);
+		if (c == '\0')
+			kill(info->si_pid, SIGUSR2);
 		bits = 0;
 		c = 0;
 	}
