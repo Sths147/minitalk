@@ -6,7 +6,7 @@
 #    By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/17 16:23:34 by sithomas          #+#    #+#              #
-#    Updated: 2025/01/06 13:33:00 by sithomas         ###   ########.fr        #
+#    Updated: 2025/01/06 14:03:58 by sithomas         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,12 +34,14 @@ O_CLIENT_BONUS = $(SRC_CLIENT_BONUS:.c=.o)
 
 O_SERVER_BONUS = $(SRC_SERVER_BONUS:.c=.o)
 
-all: fclean ft_printf server client
+all: ft_printf server client
 
-bonus: fclean ft_printf server_bonus client_bonus
+bonus: ft_printf server_bonus client_bonus
+
+git:
+	git submodule update --init
 
 ft_printf:
-	git submodule update --init
 	$(MAKE) -C printf
 
 server: $(O_SERVER)
