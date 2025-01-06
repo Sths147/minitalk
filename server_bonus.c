@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 13:31:55 by sithomas          #+#    #+#             */
-/*   Updated: 2025/01/03 13:16:20 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/01/06 13:24:52 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ int	main(void)
 			result = get_result(g_lst, size);
 			if (!result)
 				exit(1);
-			printf("%s\n", result);
+			ft_printf("%s\n", result);
 			free(result);
 		}
 	}
@@ -62,7 +62,7 @@ static void	setup_handler(void)
 {
 	struct sigaction	act;
 
-	printf("%d\n---------------PRINT AREA----------------\n\n", getpid());
+	ft_printf("%d\n---------------PRINT AREA----------------\n\n", getpid());
 	act.sa_sigaction = handler;
 	act.sa_flags = SA_SIGINFO;
 	sigemptyset(&act.sa_mask);

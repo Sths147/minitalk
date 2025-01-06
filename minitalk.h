@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 14:33:04 by sithomas          #+#    #+#             */
-/*   Updated: 2025/01/03 12:27:36 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/01/06 13:25:29 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 # define MINITALK_H
 
 # include <signal.h>
-# include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
+# include "printf/ft_printf.h"
 
 typedef struct s_list
 {
