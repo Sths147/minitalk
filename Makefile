@@ -6,7 +6,7 @@
 #    By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/17 16:23:34 by sithomas          #+#    #+#              #
-#    Updated: 2025/01/06 13:13:16 by sithomas         ###   ########.fr        #
+#    Updated: 2025/01/06 13:21:33 by sithomas         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -43,7 +43,7 @@ ft_printf:
 	$(MAKE) -C printf
 
 server: $(O_SERVER)
-	mv printf/*.o .
+	cp printf/*.o .
 	$(CC) $(CFLAGS) *.o -o $@
 
 client: $(O_CLIENT)
@@ -56,7 +56,7 @@ server_bonus: $(O_SERVER_BONUS)
 client_bonus: $(O_CLIENT_BONUS)
 	$(CC) $(CFLAGS) $(O_CLIENT_BONUS) -o $@
 
-%.o: %.c $(INC) Makefile
+%.o: %.c $(INC) Makefile minitalk.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
