@@ -6,7 +6,7 @@
 #    By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/17 16:23:34 by sithomas          #+#    #+#              #
-#    Updated: 2025/01/03 12:28:10 by sithomas         ###   ########.fr        #
+#    Updated: 2025/01/06 13:00:35 by sithomas         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,18 +34,23 @@ O_CLIENT_BONUS = $(SRC_CLIENT_BONUS:.c=.o)
 
 O_SERVER_BONUS = $(SRC_SERVER_BONUS:.c=.o)
 
-all: server client
+all: ft_printf server client
 
-bonus: server_bonus client_bonus
+bonus: ft_printf server_bonus client_bonus
+
+ft_printf:
+	$(MAKE) -C printf
 
 server: $(O_SERVER)
-	$(CC) $(CFLAGS) $(O_SERVER) -o $@
+	mv printf/*.o .
+	$(CC) $(CFLAGS) *.o -o $@
 
 client: $(O_CLIENT)
 	$(CC) $(CFLAGS) $(O_CLIENT) -o $@
 
 server_bonus: $(O_SERVER_BONUS)
-	$(CC) $(CFLAGS) $(O_SERVER_BONUS) -o $@
+	cp printf/*.o .
+	$(CC) $(CFLAGS) *.o -o $@
 
 client_bonus: $(O_CLIENT_BONUS)
 	$(CC) $(CFLAGS) $(O_CLIENT_BONUS) -o $@
@@ -54,10 +59,11 @@ client_bonus: $(O_CLIENT_BONUS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
+	$(MAKE) clean -C printf
 	rm -f *.o
 
 fclean: clean
-	rm -f client server client_bonus server_bonus
+	rm -f client server client_bonus server_bonus printf/libftprintf.a
 
 re : fclean all
 
