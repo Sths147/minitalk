@@ -6,7 +6,7 @@
 #    By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/17 16:23:34 by sithomas          #+#    #+#              #
-#    Updated: 2025/01/06 13:00:35 by sithomas         ###   ########.fr        #
+#    Updated: 2025/01/06 13:13:16 by sithomas         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,6 +39,7 @@ all: ft_printf server client
 bonus: ft_printf server_bonus client_bonus
 
 ft_printf:
+	git submodule update --init
 	$(MAKE) -C printf
 
 server: $(O_SERVER)
